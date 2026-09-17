@@ -1,0 +1,41 @@
+# Template file for 'limine-entry-tool'
+pkgname=limine-entry-tool
+version=1.39.0
+revision=1
+archs="x86_64* aarch64*"
+hostmakedepends="mandrel gradle"
+makedepends="zlib-devel"
+depends="limine"
+short_desc="Entry Automation for Limine Bootloader"
+maintainer="DigitalCoffee <code@digitalcoffee.dev>"
+license="GPL-3.0-or-later"
+homepage="https://gitlab.com/Zesko/limine-entry-tool"
+changelog="https://gitlab.com/Zesko/limine-entry-tool/-/blob/master/CHANGELOG.md"
+distfiles="https://gitlab.com/Zesko/limine-entry-tool/-/archive/${version}/limine-entry-tool-${version}.tar.gz"
+checksum=021c34feb11286b078787d87a835c813f9ff0dad701c010e49c94d924c1ee29d
+nocross="mandrel"
+
+export JAVA_HOME=/usr/lib/jvm/mandrel25
+export GRAALVM_HOME=/usr/lib/jvm/mandrel25
+export PATH="$JAVA_HOME/bin:$PATH"
+
+do_build() {
+	gradle --no-daemon nativeCompile
+}
+
+do_install() {
+	local _install_dir="install/arch-linux/limine-entry-tool"
+
+	vmkdir usr/lib/limine
+	vinstall build/native/nativeCompile/limine-entry-tool 755 usr/lib/limine
+
+	vmkdir usr/bin
+	vcopy "${_install_dir}/usr/bin/"* usr/bin
+	vcopy "${_install_dir}/usr/lib/limine/"* usr/lib/limine
+	vinstall "${_install_dir}/etc/limine-entry-tool.conf" 644 etc
+
+	vmkdir etc/boot/hooks/pre.d
+	vmkdir etc/boot/hooks/post.d
+	vcopy "${_install_dir}/etc/boot/hooks/pre.d/"* etc/boot/hooks/pre.d
+	vcopy "${_install_dir}/etc/boot/hooks/post.d/"* etc/boot/hooks/post.d
+}
